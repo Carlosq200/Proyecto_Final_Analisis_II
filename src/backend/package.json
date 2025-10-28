@@ -1,0 +1,13 @@
+﻿{
+  "name": "eventlink-backend",
+  "version": "1.0.0",
+  "description": "Backend demo para login por roles de EventLink",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.0",
+    "body-parser": "^1.20.2"
+  }
+}

@@ -1,0 +1,104 @@
+﻿@startuml
+' ==========================
+' 1. DIAGRAMA DE CASO DE USO
+' ==========================
+
+left to right direction
+actor Cliente
+actor "Organizador Afiliado" as Organizador
+actor Administrador
+
+usecase "Ver catálogo de eventos" as UC1
+usecase "Comprar entrada" as UC2
+usecase "Ver historial de compras" as UC3
+usecase "Publicar/editar evento" as UC4
+usecase "Ver reporte de ventas" as UC5
+usecase "Aprobar eventos" as UC6
+usecase "Gestionar usuarios" as UC7
+usecase "Iniciar sesión" as UC8
+
+Cliente --> UC1
+Cliente --> UC2
+Cliente --> UC3
+Cliente --> UC8
+
+Organizador --> UC4
+Organizador --> UC5
+Organizador --> UC8
+
+Administrador --> UC6
+Administrador --> UC7
+Administrador --> UC8
+
+' ==========================
+' 2. DIAGRAMA DE CLASES
+' ==========================
+
+class Usuario {
+  +id_usuario: int
+  +nombre: string
+  +email: string
+  +password_hash: string
+  +rol: string  "CLIENTE | ORGANIZADOR | ADMIN"
+}
+
+class Evento {
+  +id_evento: int
+  +titulo: string
+  +descripcion: string
+  +fecha_hora: datetime
+  +lugar: string
+  +precio: decimal
+  +estado: string  "pendiente | aprobado | rechazado"
+  +id_organizador: int
+}
+
+class Compra {
+  +id_compra: int
+  +id_usuario: int
+  +id_evento: int
+  +cantidad: int
+  +total_pagado: decimal
+  +fecha_compra: datetime
+}
+
+class Pago {
+  +id_pago: int
+  +id_compra: int
+  +metodo: string
+  +estado: string
+  +referencia_transaccion: string
+}
+
+Usuario "1" -- "many" Evento : publica >
+Usuario "1" -- "many" Compra : realiza >
+Evento  "1" -- "many" Compra : genera >
+Compra  "1" -- "1" Pago   : tiene >
+
+' ==========================
+' 3. DIAGRAMA DE SECUENCIA
+' Flujo: Cliente compra entrada
+' ==========================
+
+@startuml CompraEntrada
+actor Cliente
+participant "Frontend Web/App" as FE
+participant "Backend API" as BE
+participant "BD" as DB
+participant "PasarelaPago" as Pay
+
+Cliente -> FE: Seleccionar evento y cantidad
+FE -> BE: POST /compras (evento, cantidad, usuario)
+BE -> DB: INSERT Compra (pendiente)
+DB --> BE: OK (id_compra)
+
+BE -> Pay: Procesar pago(total)
+Pay --> BE: Pago aprobado + ref
+BE -> DB: UPDATE Compra (pagado)\nINSERT Pago
+DB --> BE: OK
+
+BE -> FE: Respuesta (ticket confirmado)
+FE -> Cliente: Mostrar confirmación y ticket
+@enduml
+
+@enduml
